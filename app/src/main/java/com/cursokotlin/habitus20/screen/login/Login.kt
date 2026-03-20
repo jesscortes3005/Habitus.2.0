@@ -16,6 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cursokotlin.habitus20.screen.componentes.CustomTextField
@@ -23,6 +24,7 @@ import com.cursokotlin.habitus20.screen.register.UserDataStore
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
+import com.cursokotlin.habitus20.ui.theme.theme.Habitus20Theme
 
 @Composable
 fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
@@ -179,5 +181,13 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    Habitus20Theme {
+        LoginScreen()
     }
 }
