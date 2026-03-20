@@ -1,5 +1,6 @@
-package com.cursokotlin.habitus20.screen
+package com.cursokotlin.habitus20.screen.pages
 
+import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,9 +23,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cursokotlin.habitus20.ui.theme.HabitusPurple
-import com.cursokotlin.habitus20.ui.theme.HabitusLightGray
-import com.cursokotlin.habitus20.ui.theme.HabitusDarkPurple
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
 
 @Composable
 fun ProfileScreen() {
@@ -56,7 +57,7 @@ fun ProfileScreen() {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             // Using a placeholder icon for the logo
                             Icon(
-                                painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                                painter = painterResource(id = R.drawable.ic_menu_gallery),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
                                 tint = HabitusDarkPurple

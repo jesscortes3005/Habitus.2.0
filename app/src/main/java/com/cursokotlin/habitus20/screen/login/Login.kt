@@ -1,4 +1,4 @@
-package com.cursokotlin.habitus20.screen
+package com.cursokotlin.habitus20.screen.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,9 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cursokotlin.habitus20.ui.theme.HabitusPurple
-import com.cursokotlin.habitus20.ui.theme.HabitusLightGray
-import com.cursokotlin.habitus20.ui.theme.HabitusDarkPurple
+import com.cursokotlin.habitus20.screen.componentes.CustomTextField
+import com.cursokotlin.habitus20.screen.register.UserDataStore
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
 
 @Composable
 fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
@@ -30,7 +32,6 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
 
     val geometricFont = FontFamily.SansSerif
 
-    // Email regex: letters, optional numbers, @, and domain
     val emailRegex = "^[a-zA-Z]+[0-9]*@[a-zA-Z]+\\.[a-zA-Z]+$".toRegex()
 
     Box(
@@ -86,12 +87,10 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Usuario Field with restrictions
             Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                 CustomTextField(
                     value = usuario,
                     onValueChange = { newValue ->
-                        // Only allow letters and max 24 chars
                         val filtered = newValue.filter { it.isLetter() }.take(24)
                         usuario = filtered
                     },
@@ -101,7 +100,6 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Correo Field
             Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                 CustomTextField(
                     value = correo,
@@ -115,6 +113,7 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                     text = errorMsg,
                     color = Color.Yellow,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
@@ -123,13 +122,13 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
 
             Button(
                 onClick = {
-                    if (usuario.isEmpty()) {
-                        errorMsg = "El usuario no puede estar vacío"
-                    } else if (!emailRegex.matches(correo)) {
-                        errorMsg = "Correo inválido (Nombre+números opcionales@dominio)"
-                    } else {
+                    if (usuario.isEmpty() || correo.isEmpty()) {
+                        errorMsg = "Por favor, llena todos los campos"
+                    } else if (usuario == UserDataStore.savedUser && correo == UserDataStore.savedEmail) {
                         errorMsg = ""
                         onLoginSuccess()
+                    } else {
+                        errorMsg = "Datos incorrectos o no registrados"
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = HabitusLightGray),

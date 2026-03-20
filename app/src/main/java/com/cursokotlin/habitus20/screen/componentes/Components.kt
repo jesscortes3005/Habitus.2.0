@@ -1,4 +1,4 @@
-package com.cursokotlin.habitus20.screen
+package com.cursokotlin.habitus20.screen.componentes
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.cursokotlin.habitus20.ui.theme.HabitusLightGray
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

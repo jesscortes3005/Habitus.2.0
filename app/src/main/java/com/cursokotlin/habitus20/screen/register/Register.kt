@@ -1,4 +1,4 @@
-package com.cursokotlin.habitus20.screen
+package com.cursokotlin.habitus20.screen.register
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,9 +19,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cursokotlin.habitus20.ui.theme.HabitusPurple
-import com.cursokotlin.habitus20.ui.theme.HabitusLightGray
-import com.cursokotlin.habitus20.ui.theme.HabitusDarkPurple
+import com.cursokotlin.habitus20.screen.componentes.CustomTextField
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
+
+// Simple Singleton to store user data in memory for this session
+object UserDataStore {
+    var savedUser by mutableStateOf("")
+    var savedEmail by mutableStateOf("")
+    var savedPassword by mutableStateOf("")
+}
 
 @Composable
 fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit = {}) {
@@ -34,10 +42,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
 
     val geometricFont = FontFamily.SansSerif
     
-    // Email regex: letters + optional numbers + @ + domain
     val emailRegex = "^[a-zA-Z]+[0-9]*@[a-zA-Z]+\\.[a-zA-Z]+$".toRegex()
     
-    // Password requirements: 12 chars, 1 uppercase, 1 symbol, 1 number
     fun isPasswordValid(pass: String): Boolean {
         if (pass.length < 12) return false
         val hasUppercase = pass.any { it.isUpperCase() }
@@ -73,7 +79,6 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // User Field (Max 24, only letters)
                 Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                     CustomTextField(
                         value = user,
@@ -81,26 +86,23 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                             val filtered = newValue.filter { it.isLetter() }.take(24)
                             user = filtered
                         },
-                        label = "User"
+                        label = "Usuario:"
                     )
                 }
 
-                // Email Field
                 Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                     CustomTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = "Example123@gmail.com"
+                        label = "Correo electronico:"
                     )
                 }
 
-                // Password Field (12 chars + complex)
                 Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
-                    // Note: Using a modified version of CustomTextField or internal TextField for password
                     TextField(
                         value = password,
                         onValueChange = { password = it },
-                        placeholder = { Text(text = "Contraseña (12 caracteres + complejo)", color = Color.Gray, fontSize = 12.sp) },
+                        placeholder = { Text(text = "Contraseña", color = Color.Gray) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -117,12 +119,11 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                     )
                 }
 
-                // Confirm Password Field
                 Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                     TextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        placeholder = { Text(text = "Confirmar Contraseña:", color = Color.Gray, fontSize = 12.sp) },
+                        placeholder = { Text(text = "Confirmar Contraseña:", color = Color.Gray) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -152,7 +153,6 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Terms and Conditions
             Surface(
                 color = HabitusLightGray,
                 shape = RoundedCornerShape(10.dp),
@@ -183,7 +183,6 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Register Button
             Button(
                 onClick = {
                     if (user.isEmpty()) {
@@ -197,6 +196,11 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                     } else if (!termsAccepted) {
                         errorMsg = "Debes aceptar los términos y condiciones"
                     } else {
+                        // SAVE DATA TO STORE
+                        UserDataStore.savedUser = user
+                        UserDataStore.savedEmail = email
+                        UserDataStore.savedPassword = password
+                        
                         errorMsg = ""
                         onRegisterSuccess()
                     }

@@ -1,4 +1,4 @@
-package com.cursokotlin.habitus20.ui.theme
+package com.cursokotlin.habitus20.ui.theme.theme
 
 import androidx.compose.ui.graphics.Color
 
