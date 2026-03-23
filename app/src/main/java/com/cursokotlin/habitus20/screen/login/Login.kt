@@ -4,6 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,26 +19,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cursokotlin.habitus20.screen.componentes.CustomTextField
-import com.cursokotlin.habitus20.screen.register.UserDataStore
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
 import com.cursokotlin.habitus20.ui.theme.theme.Habitus20Theme
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
-    var usuario by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
+    val auth = FirebaseAuth.getInstance()
     val geometricFont = FontFamily.SansSerif
-
-    val emailRegex = "^[a-zA-Z]+[0-9]*@[a-zA-Z]+\\.[a-zA-Z]+$".toRegex()
 
     Box(
         modifier = Modifier
@@ -61,7 +69,7 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
 
             Box(
                 modifier = Modifier
-                    .size(220.dp)
+                    .size(180.dp)
                     .shadow(elevation = 12.dp, shape = CircleShape)
                     .clip(CircleShape)
                     .background(HabitusLightGray),
@@ -71,14 +79,14 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                     Icon(
                         painter = painterResource(id = android.R.drawable.ic_menu_gallery),
                         contentDescription = null,
-                        modifier = Modifier.size(85.dp),
+                        modifier = Modifier.size(70.dp),
                         tint = HabitusDarkPurple
                     )
                     Text(
                         text = "HABITUS",
                         style = TextStyle(
                             color = HabitusDarkPurple,
-                            fontSize = 32.sp,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Black,
                             fontFamily = geometricFont,
                             letterSpacing = 3.sp
@@ -87,26 +95,45 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                 }
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
-
-            Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
-                CustomTextField(
-                    value = usuario,
-                    onValueChange = { newValue ->
-                        val filtered = newValue.filter { it.isLetter() }.take(24)
-                        usuario = filtered
-                    },
-                    label = "Usuario:"
-                )
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
                 CustomTextField(
                     value = correo,
                     onValueChange = { correo = it },
                     label = "Correo electronico:"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Box(modifier = Modifier.shadow(8.dp, RoundedCornerShape(12.dp))) {
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = { Text(text = "Contraseña", color = Color.Gray) },
+                    textStyle = TextStyle(color = HabitusDarkPurple, fontSize = 16.sp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = HabitusLightGray,
+                        unfocusedContainerColor = HabitusLightGray,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = HabitusDarkPurple,
+                        focusedTextColor = HabitusDarkPurple
+                    ),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña", tint = HabitusDarkPurple)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true
                 )
             }
 
@@ -120,35 +147,46 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                 )
             }
 
-            Spacer(modifier = Modifier.height(35.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            Button(
-                onClick = {
-                    if (usuario.isEmpty() || correo.isEmpty()) {
-                        errorMsg = "Por favor, llena todos los campos"
-                    } else if (usuario == UserDataStore.savedUser && correo == UserDataStore.savedEmail) {
-                        errorMsg = ""
-                        onLoginSuccess()
-                    } else {
-                        errorMsg = "Datos incorrectos o no registrados"
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = HabitusLightGray),
-                shape = RoundedCornerShape(30.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                modifier = Modifier
-                    .width(220.dp)
-                    .height(50.dp)
-            ) {
-                Text(
-                    text = "Iniciar sesión",
-                    style = TextStyle(
-                        color = HabitusDarkPurple,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = geometricFont
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else {
+                Button(
+                    onClick = {
+                        if (correo.isEmpty() || password.isEmpty()) {
+                            errorMsg = "Por favor, llena todos los campos"
+                        } else {
+                            isLoading = true
+                            auth.signInWithEmailAndPassword(correo, password)
+                                .addOnCompleteListener { task ->
+                                    isLoading = false
+                                    if (task.isSuccessful) {
+                                        errorMsg = ""
+                                        onLoginSuccess()
+                                    } else {
+                                        errorMsg = "Correo o contraseña incorrectos"
+                                    }
+                                }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = HabitusLightGray),
+                    shape = RoundedCornerShape(30.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .width(220.dp)
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Iniciar sesión",
+                        style = TextStyle(
+                            color = HabitusDarkPurple,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = geometricFont
+                        )
                     )
-                )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -160,21 +198,6 @@ fun LoginScreen(onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {
                         color = HabitusDarkPurple,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        fontFamily = geometricFont,
-                        textDecoration = TextDecoration.Underline
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(45.dp))
-
-            TextButton(onClick = { /* Handle Forgot Password */ }) {
-                Text(
-                    text = "Olvidaste tu contraseña?",
-                    style = TextStyle(
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
                         fontFamily = geometricFont,
                         textDecoration = TextDecoration.Underline
                     )

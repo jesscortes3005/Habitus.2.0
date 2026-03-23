@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +19,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,13 +27,7 @@ import com.cursokotlin.habitus20.screen.componentes.CustomTextField
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusPurple
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
-
-// Simple Singleton to store user data in memory for this session
-object UserDataStore {
-    var savedUser by mutableStateOf("")
-    var savedEmail by mutableStateOf("")
-    var savedPassword by mutableStateOf("")
-}
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit = {}) {
@@ -37,19 +35,22 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var termsAccepted by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
+    val auth = FirebaseAuth.getInstance()
     val geometricFont = FontFamily.SansSerif
     
-    val emailRegex = "^[a-zA-Z]+[0-9]*@[a-zA-Z]+\\.[a-zA-Z]+$".toRegex()
+    val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     
     fun isPasswordValid(pass: String): Boolean {
-        if (pass.length < 12) return false
+        if (pass.length < 8) return false
         val hasUppercase = pass.any { it.isUpperCase() }
         val hasDigit = pass.any { it.isDigit() }
-        val hasSymbol = pass.any { !it.isLetterOrDigit() }
-        return hasUppercase && hasDigit && hasSymbol
+        return hasUppercase && hasDigit
     }
 
     Box(
@@ -103,6 +104,7 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                         value = password,
                         onValueChange = { password = it },
                         placeholder = { Text(text = "Contraseña", color = Color.Gray) },
+                        textStyle = TextStyle(color = HabitusDarkPurple, fontSize = 16.sp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -112,8 +114,16 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                             unfocusedContainerColor = HabitusLightGray,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = HabitusDarkPurple,
+                            focusedTextColor = HabitusDarkPurple
                         ),
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(imageVector = image, contentDescription = null, tint = HabitusDarkPurple)
+                            }
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true
                     )
@@ -124,6 +134,7 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
                         placeholder = { Text(text = "Confirmar Contraseña:", color = Color.Gray) },
+                        textStyle = TextStyle(color = HabitusDarkPurple, fontSize = 16.sp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -133,8 +144,16 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
                             unfocusedContainerColor = HabitusLightGray,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = HabitusDarkPurple,
+                            focusedTextColor = HabitusDarkPurple
                         ),
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(imageVector = image, contentDescription = null, tint = HabitusDarkPurple)
+                            }
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true
                     )
@@ -183,44 +202,57 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onRegisterSuccess: () -> Unit 
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = {
-                    if (user.isEmpty()) {
-                        errorMsg = "El usuario debe contener solo letras"
-                    } else if (!emailRegex.matches(email)) {
-                        errorMsg = "Correo inválido (Formato: Nombre+Nros@dominio)"
-                    } else if (!isPasswordValid(password)) {
-                        errorMsg = "Contraseña: 12 caracteres, Mayúscula, Número y Símbolo"
-                    } else if (password != confirmPassword) {
-                        errorMsg = "Las contraseñas no coinciden"
-                    } else if (!termsAccepted) {
-                        errorMsg = "Debes aceptar los términos y condiciones"
-                    } else {
-                        // SAVE DATA TO STORE
-                        UserDataStore.savedUser = user
-                        UserDataStore.savedEmail = email
-                        UserDataStore.savedPassword = password
-                        
-                        errorMsg = ""
-                        onRegisterSuccess()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = HabitusLightGray),
-                shape = RoundedCornerShape(30.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(50.dp)
-            ) {
-                Text(
-                    text = "Registrarse",
-                    style = TextStyle(
-                        color = HabitusDarkPurple,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = geometricFont
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else {
+                Button(
+                    onClick = {
+                        if (user.isEmpty()) {
+                            errorMsg = "El usuario debe contener solo letras"
+                        } else if (!emailRegex.matches(email)) {
+                            errorMsg = "Correo inválido"
+                        } else if (!isPasswordValid(password)) {
+                            errorMsg = "Contraseña: 8+ caracteres, Mayúscula y Número"
+                        } else if (password != confirmPassword) {
+                            errorMsg = "Las contraseñas no coinciden"
+                        } else if (!termsAccepted) {
+                            errorMsg = "Debes aceptar los términos y condiciones"
+                        } else {
+                            isLoading = true
+                            auth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { task ->
+                                    isLoading = false
+                                    if (task.isSuccessful) {
+                                        val profileUpdates = com.google.firebase.auth.userProfileChangeRequest {
+                                            displayName = user
+                                        }
+                                        auth.currentUser?.updateProfile(profileUpdates)
+                                        
+                                        errorMsg = ""
+                                        onRegisterSuccess()
+                                    } else {
+                                        errorMsg = task.exception?.localizedMessage ?: "Error al registrar"
+                                    }
+                                }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = HabitusLightGray),
+                    shape = RoundedCornerShape(30.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "Registrarse",
+                        style = TextStyle(
+                            color = HabitusDarkPurple,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = geometricFont
+                        )
                     )
-                )
+                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))

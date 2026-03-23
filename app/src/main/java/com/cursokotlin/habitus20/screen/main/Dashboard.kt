@@ -2,6 +2,7 @@ package com.cursokotlin.habitus20.screen.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -9,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -46,7 +48,6 @@ fun DashboardScreen(onProfileClick: () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Mini Logo Circle
                     Box(
                         modifier = Modifier
                             .size(55.dp)
@@ -100,12 +101,10 @@ fun DashboardScreen(onProfileClick: () -> Unit = {}) {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BottomNavItem(Icons.Default.Build, "Mis Objetivos", true)
-                    BottomNavItem(Icons.Default.ShoppingCart, "Dieta", false)
-                    BottomNavItem(Icons.Default.Settings, "Ajustes", false)
-                    IconButton(onClick = onProfileClick) {
-                        BottomNavItem(Icons.Default.Person, "Perfil", false)
-                    }
+                    BottomNavItem(Icons.Default.Build, "Mis Objetivos", true, {})
+                    BottomNavItem(Icons.AutoMirrored.Filled.List, "Dieta", false, {})
+                    BottomNavItem(Icons.Default.Settings, "Ajustes", false, {})
+                    BottomNavItem(Icons.Default.Person, "Perfil", false, onProfileClick)
                 }
             }
         }
@@ -170,23 +169,27 @@ fun DayCard(day: Int, isCompleted: Boolean) {
 }
 
 @Composable
-fun BottomNavItem(icon: ImageVector, label: String, isSelected: Boolean) {
+fun BottomNavItem(icon: ImageVector, label: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick() }
+            .padding(8.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            modifier = Modifier.size(30.dp),
-            tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f)
+            modifier = Modifier.size(28.dp),
+            tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
         )
         Text(
             text = label,
             style = TextStyle(
-                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium
+                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
+                fontSize = 11.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
             )
         )
     }

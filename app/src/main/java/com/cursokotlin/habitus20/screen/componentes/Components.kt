@@ -8,16 +8,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cursokotlin.habitus20.ui.theme.theme.HabitusLightGray
+import com.cursokotlin.habitus20.ui.theme.theme.HabitusDarkPurple
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTextField(value: String, onValueChange: (String) -> Unit, label: String) {
     TextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = { Text(text = label, color = Color.Gray) },
+        textStyle = TextStyle(
+            color = HabitusDarkPurple,
+            fontSize = 16.sp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
@@ -28,6 +34,10 @@ fun CustomTextField(value: String, onValueChange: (String) -> Unit, label: Strin
             disabledContainerColor = HabitusLightGray,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
+            cursorColor = HabitusDarkPurple, // <-- Cursor morado
+            focusedLabelColor = HabitusDarkPurple,
+            unfocusedLabelColor = Color.Gray,
+            focusedTextColor = HabitusDarkPurple // <-- Texto morado al escribir
         ),
         singleLine = true
     )

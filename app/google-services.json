@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "454077841548",
+    "project_id": "habitus-2",
+    "storage_bucket": "habitus-2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:454077841548:android:d104267debbf6d5650bba9",
+        "android_client_info": {
+          "package_name": "com.cursokotlin.habitus20"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCghn3zKLJxrs7xF7iXuQ-ZPTeCJpqQB1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
